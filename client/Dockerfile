@@ -28,7 +28,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Railway provides PORT environment variable
-EXPOSE ${PORT:-80}
+EXPOSE 8080
 
-# Use envsubst to replace PORT in nginx config at runtime
-CMD sh -c "envsubst '\$PORT' < /etc/nginx/conf.d/default.conf > /tmp/default.conf && mv /tmp/default.conf /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+# Use envsubst to replace PORT in nginx config at runtime and start nginx
+CMD sh -c "export PORT=\${PORT:-8080} && envsubst '\$PORT' < /etc/nginx/conf.d/default.conf > /tmp/default.conf && mv /tmp/default.conf /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
