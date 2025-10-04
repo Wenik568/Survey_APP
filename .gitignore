@@ -7,3 +7,4 @@ node_modules
 coverage/
 nul
 *.log
+.env.env
