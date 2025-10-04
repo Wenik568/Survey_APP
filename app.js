@@ -45,23 +45,24 @@ app.use(helmet({
 
 // CORS налаштування для підтримки credentials (cookies)
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? (origin, callback) => {
-        // Дозволяємо всі Vercel домени та Railway
-        const allowedOrigins = [
-          /^https:\/\/survey-app.*\.vercel\.app$/,
-          'https://responsible-encouragement-production.up.railway.app'
-        ];
-
-        if (!origin || allowedOrigins.some(pattern =>
-          pattern instanceof RegExp ? pattern.test(origin) : pattern === origin
-        )) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
+  origin: (origin, callback) => {
+    if (process.env.NODE_ENV === 'production') {
+      // Дозволяємо всі Vercel домени та Railway
+      if (!origin || origin.endsWith('.vercel.app') || origin === 'https://responsible-encouragement-production.up.railway.app') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
       }
-    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5176', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+    } else {
+      // Для development дозволяємо localhost
+      const devOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5176', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+      if (!origin || devOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 }));
