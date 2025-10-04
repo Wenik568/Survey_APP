@@ -46,7 +46,33 @@ app.use(helmet({
 
 // CORS налаштування для підтримки credentials (cookies)
 app.use(cors({
-  origin: true, // Тимчасово дозволяємо всі домени для тестування
+  origin: (origin, callback) => {
+    // Список дозволених доменів
+    const allowedOrigins = [
+      'https://survey-app-coral-omega.vercel.app',
+      'https://responsible-encouragement-production.up.railway.app',
+      /^http:\/\/localhost:\d+$/  // localhost для розробки
+    ];
+
+    // Дозволяємо запити без origin (наприклад, Postman) або з дозволених доменів
+    if (!origin) return callback(null, true);
+
+    // Перевіряємо чи origin в списку дозволених
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed instanceof RegExp) return allowed.test(origin);
+      if (typeof allowed === 'string') return allowed === origin;
+      return false;
+    });
+
+    // Також дозволяємо всі Vercel preview domains
+    const isVercelPreview = origin.endsWith('.vercel.app');
+
+    if (isAllowed || isVercelPreview) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 }));
