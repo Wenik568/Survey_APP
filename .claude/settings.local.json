@@ -27,7 +27,11 @@
       "Bash(npx playwright:*)",
       "Bash(dir:*)",
       "Bash(del zvit.txt)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
