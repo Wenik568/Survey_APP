@@ -27,8 +27,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Railway provides PORT environment variable dynamically
-EXPOSE 8080
+# Expose port 80 (standard nginx port)
+EXPOSE 80
 
-# Use envsubst to replace PORT in nginx config at runtime and start nginx
-CMD sh -c "echo \"PORT is: \$PORT\" && PORT=\${PORT:-8080} && echo \"Using PORT: \$PORT\" && envsubst '\$PORT' < /etc/nginx/conf.d/default.conf > /tmp/default.conf && mv /tmp/default.conf /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
