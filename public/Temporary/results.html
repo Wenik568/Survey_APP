@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результати опитувань</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            padding: 1rem;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        #surveys-list {
+            margin-top: 2rem;
+        }
+
+        .survey-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .survey-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .survey-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .view-results-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .view-results-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .results-container {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .chart-container {
+            margin-top: 1rem;
+            min-height: 300px;
+        }
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .survey-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .survey-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .survey-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+
+        .survey-info {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .chart-container {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .response-list {
+            margin-top: 1rem;
+        }
+
+        .response-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .answer-text {
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80% { content: '....'; }
+            100% { content: '.....'; }
+        }
+
+        .no-surveys {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .survey-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .survey-header .btn {
+                margin-top: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>🗳️ Система Опитувань</h1>
+            <div>
+                <a href="/dashboard.html">Головна</a>
+                <a href="/surveys.html">Мої опитування</a>
+                <button class="btn" onclick="logout()" style="margin-left: 10px;">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Результати опитувань</h2>
+        <div id="surveyResults"></div>
+        <div id="loading" class="loading">Завантаження результатів...</div>
+    </div>
+
+    <script>
+        // Перевірка авторизації при завантаженні
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+            loadSurveyResults();
+        });
+
+        // Завантаження результатів опитувань
+        async function loadSurveyResults() {
+            const loading = document.getElementById('loading');
+            const resultsContainer = document.getElementById('surveyResults');
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/surveys', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.data.surveys.length === 0) {
+                        resultsContainer.innerHTML = `
+                            <div class="no-surveys">
+                                <h3>У вас поки немає опитувань</h3>
+                                <p>Створіть нове опитування, щоб побачити результати</p>
+                                <a href="/create-survey.html" class="btn" style="background-color: #007bff; color: white;">Створити опитування</a>
+                            </div>
+                        `;
+                    } else {
+                        const surveysHtml = await Promise.all(result.data.surveys.map(async survey => {
+                            const stats = await loadSurveyStats(survey._id);
+                            return generateSurveyCard(survey, stats);
+                        }));
+                        
+                        resultsContainer.innerHTML = surveysHtml.join('');
+                    }
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="error">
+                            Помилка завантаження результатів: ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Помилка:', error);
+                resultsContainer.innerHTML = `
+                    <div class="error">
+                        Помилка з'єднання з сервером
+                    </div>
+                `;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Завантаження статистики конкретного опитування
+        async function loadSurveyStats(surveyId) {
+            try {
+                const response = await fetch(`/api/surveys/${surveyId}/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                });
+                
+                const result = await response.json();
+                return result.success ? result.data : null;
+            } catch (error) {
+                console.error('Помилка завантаження статистики:', error);
+                return null;
+            }
+        }
+
+        // Генерація HTML картки опитування
+        function generateSurveyCard(survey, stats) {
+            const createdDate = new Date(survey.createdAt).toLocaleDateString('uk-UA');
+            const isActive = survey.isActive ? 'Активне' : 'Неактивне';
+            const responsesCount = stats?.totalResponses || 0;
+
+            return `
+                <div class="survey-card">
+                    <div class="survey-header">
+                        <h3 class="survey-title">${survey.title}</h3>
+                        <a href="/export.html?id=${survey._id}" class="btn" style="background-color: #007bff; color: white;">
+                            Експорт CSV
+                        </a>
+                    </div>
+                    
+                    <div class="survey-info">
+                        <p><strong>Статус:</strong> ${isActive}</p>
+                        <p><strong>Створено:</strong> ${createdDate}</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        ${stats ? generateStatsHTML(stats) : 'Статистика поки недоступна'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Генерація HTML для статистики
+        function generateStatsHTML(stats) {
+            let statsHtml = '';
+            
+            if (stats.questionStats) {
+                stats.questionStats.forEach((question, index) => {
+                    statsHtml += `
+                        <div class="chart-container">
+                            <h4>Питання ${index + 1}: ${question.text}</h4>
+                            ${generateAnswersHTML(question)}
+                        </div>
+                    `;
+                });
+            }
+            
+            return statsHtml;
+        }
+
+        // Генерація HTML для відповідей
+        function generateAnswersHTML(question) {
+            if (question.type === 'text') {
+                return `
+                    <div class="response-list">
+                        ${Object.entries(question.answers)
+                            .map(([answer, count]) => `
+                                <div class="response-item">
+                                    <div class="answer-text">${answer}</div>
+                                </div>
+                            `).join('')}
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="stats-grid">
+                        ${Object.entries(question.answers)
+                            .map(([answer, count]) => `
+                                <div class="stat-card">
+                                    <div class="stat-label">${answer}</div>
+                                    <div class="stat-number">${count}</div>
+                                    <div class="stat-label">відповідей</div>
+                                </div>
+                            `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Експорт результатів у CSV
+        async function exportResponses(surveyId) {
+            window.location.href = `/export.html?id=${surveyId}`;
+        }
+
+        // Вихід з системи
+        function logout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            }).then(() => {
+                localStorage.removeItem('accessToken');
+                window.location.href = '/index.html';
+            });
+        }
+    </script>
+</body>
+</html>

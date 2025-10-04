@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Створення нового опитування</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .navbar {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .creation-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .questions-container {
+            margin-top: 2rem;
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            position: relative;
+        }
+
+        .question-card .remove-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .question-card .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .options-container {
+            margin-top: 1rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-item input {
+            flex-grow: 1;
+            margin-right: 0.5rem;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .buttons-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: white;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80% { content: '....'; }
+            100% { content: '.....'; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .creation-form {
+                padding: 1rem;
+            }
+            
+            .buttons-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1 style="margin: 0;">🗳️ Система Опитувань</h1>
+            <div>
+                <a href="/dashboard.html">Головна</a>
+                <a href="/surveys.html">Мої опитування</a>
+                <button class="btn btn-danger" onclick="logout()" style="margin-left: 10px;">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="creation-form">
+            <h2>📝 Створення нового опитування</h2>
+            
+            <div id="messages"></div>
+            
+            <div class="form-group">
+                <label for="surveyTitle">Назва опитування *</label>
+                <input type="text" id="surveyTitle" placeholder="Введіть назву опитування" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="surveyDescription">Опис опитування</label>
+                <textarea id="surveyDescription" placeholder="Введіть опис опитування (необов'язково)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="surveyClosingDate">Дата закриття опитування</label>
+                <input type="datetime-local" id="surveyClosingDate">
+            </div>
+
+            <div class="questions-container">
+                <h3>Питання</h3>
+                <div id="questionsContainer"></div>
+            </div>
+
+            <div class="buttons-group">
+                <button class="btn btn-secondary" onclick="addQuestion('text')">
+                    ✏️ Додати текстове питання
+                </button>
+                <button class="btn btn-secondary" onclick="addQuestion('radio')">
+                    ⭕ Додати питання з одним варіантом
+                </button>
+                <button class="btn btn-secondary" onclick="addQuestion('checkbox')">
+                    ☑️ Додати питання з декількома варіантами
+                </button>
+            </div>
+
+            <div class="buttons-group" style="margin-top: 2rem;">
+                <button class="btn btn-success" onclick="createSurvey()">
+                    💾 Зберегти опитування
+                </button>
+                <button class="btn btn-danger" onclick="resetForm()">
+                    🔄 Очистити форму
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questionsData = [];
+        let questionCounter = 0;
+
+        // Перевірка авторизації
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        });
+
+        function addQuestion(type) {
+            questionCounter++;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-card';
+            questionDiv.dataset.id = questionCounter;
+
+            let optionsHtml = '';
+            if (type === 'radio' || type === 'checkbox') {
+                optionsHtml = `
+                    <div class="options-container" id="options-${questionCounter}">
+                        <div class="option-item">
+                            <input type="text" placeholder="Варіант відповіді 1" class="option-input">
+                            <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="addOption(${questionCounter})">
+                        ➕ Додати варіант
+                    </button>
+                `;
+            }
+
+            questionDiv.innerHTML = `
+                <button class="remove-btn" onclick="removeQuestion(this)">❌</button>
+                <div class="form-group">
+                    <label>Текст питання *</label>
+                    <input type="text" class="question-text" placeholder="Введіть текст питання" required>
+                </div>
+                <div class="form-group">
+                    <label>Тип питання</label>
+                    <select class="question-type" onchange="handleTypeChange(this)">
+                        <option value="text" ${type === 'text' ? 'selected' : ''}>Текстова відповідь</option>
+                        <option value="radio" ${type === 'radio' ? 'selected' : ''}>Один варіант</option>
+                        <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Декілька варіантів</option>
+                    </select>
+                </div>
+                ${optionsHtml}
+            `;
+
+            document.getElementById('questionsContainer').appendChild(questionDiv);
+            updateQuestionsData();
+        }
+
+        function removeQuestion(button) {
+            button.closest('.question-card').remove();
+            updateQuestionsData();
+        }
+
+        function addOption(questionId) {
+            const optionsContainer = document.getElementById(`options-${questionId}`);
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            optionDiv.innerHTML = `
+                <input type="text" placeholder="Варіант відповіді" class="option-input">
+                <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+            `;
+            optionsContainer.appendChild(optionDiv);
+            updateQuestionsData();
+        }
+
+        function removeOption(button) {
+            button.closest('.option-item').remove();
+            updateQuestionsData();
+        }
+
+        function handleTypeChange(select) {
+            const questionCard = select.closest('.question-card');
+            const questionId = questionCard.dataset.id;
+            const optionsContainer = questionCard.querySelector('.options-container');
+            const addOptionBtn = questionCard.querySelector('button:last-child');
+
+            if (select.value === 'text') {
+                if (optionsContainer) {
+                    optionsContainer.remove();
+                    addOptionBtn.remove();
+                }
+            } else if (!optionsContainer) {
+                const newOptionsContainer = document.createElement('div');
+                newOptionsContainer.className = 'options-container';
+                newOptionsContainer.id = `options-${questionId}`;
+                newOptionsContainer.innerHTML = `
+                    <div class="option-item">
+                        <input type="text" placeholder="Варіант відповіді 1" class="option-input">
+                        <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+                    </div>
+                `;
+
+                const addButton = document.createElement('button');
+                addButton.className = 'btn btn-secondary';
+                addButton.onclick = () => addOption(questionId);
+                addButton.textContent = '➕ Додати варіант';
+
+                questionCard.appendChild(newOptionsContainer);
+                questionCard.appendChild(addButton);
+            }
+            updateQuestionsData();
+        }
+
+        function updateQuestionsData() {
+            questionsData = [];
+            document.querySelectorAll('.question-card').forEach(card => {
+                const questionData = {
+                    text: card.querySelector('.question-text').value,
+                    type: card.querySelector('.question-type').value,
+                    options: []
+                };
+
+                const optionsContainer = card.querySelector('.options-container');
+                if (optionsContainer) {
+                    optionsContainer.querySelectorAll('.option-input').forEach(input => {
+                        if (input.value.trim()) {
+                            questionData.options.push(input.value.trim());
+                        }
+                    });
+                }
+
+                questionsData.push(questionData);
+            });
+        }
+
+        async function createSurvey() {
+            updateQuestionsData();
+
+            const title = document.getElementById('surveyTitle').value.trim();
+            const description = document.getElementById('surveyDescription').value.trim();
+            const closingDate = document.getElementById('surveyClosingDate').value;
+
+            if (!title) {
+                showMessage('Будь ласка, введіть назву опитування', 'error');
+                return;
+            }
+
+            if (questionsData.length === 0) {
+                showMessage('Додайте хоча б одне питання', 'error');
+                return;
+            }
+
+            const invalidQuestions = questionsData.filter(q => !q.text || 
+                (q.type !== 'text' && (!q.options || q.options.length < 2)));
+
+            if (invalidQuestions.length > 0) {
+                showMessage('Перевірте, що всі питання мають текст та варіанти відповідей (мінімум 2)', 'error');
+                return;
+            }
+
+            const surveyData = {
+                title,
+                description,
+                questions: questionsData,
+                closingDate: closingDate || null
+            };
+
+            try {
+                const response = await fetch('/api/surveys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Опитування успішно створено!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/surveys.html';
+                    }, 1500);
+                } else {
+                    showMessage(result.message || 'Помилка створення опитування', 'error');
+                }
+            } catch (error) {
+                showMessage('Помилка з\'єднання з сервером', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => {
+                messagesDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function resetForm() {
+            if (confirm('Ви впевнені, що хочете очистити форму? Всі введені дані будуть втрачені.')) {
+                document.getElementById('surveyTitle').value = '';
+                document.getElementById('surveyDescription').value = '';
+                document.getElementById('surveyClosingDate').value = '';
+                document.getElementById('questionsContainer').innerHTML = '';
+                questionsData = [];
+                questionCounter = 0;
+                showMessage('Форму очищено', 'success');
+            }
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            }).then(() => {
+                localStorage.removeItem('accessToken');
+                window.location.href = '/index.html';
+            });
+        }
+    </script>
+</body>
+</html>

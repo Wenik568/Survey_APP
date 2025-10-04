@@ -1,0 +1,45 @@
+# Frontend .dockerignore
+
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+
+# Build output (will be created in container)
+dist/
+build/
+
+# Tests
+e2e/
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+
+# Development files
+.env.local
+.env.development
+vite.config.ts.timestamp-*
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Test results
+test-results/
+playwright-report/

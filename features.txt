@@ -1,0 +1,5 @@
+API документація (Swagger/OpenAPI)
+E2E тести (Playwright/Cypress)
+Performance optimization metrics
+Accessibility (WCAG compliance)
+Internationalization (i18n)

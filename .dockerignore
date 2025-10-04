@@ -1,0 +1,38 @@
+# Backend .dockerignore
+
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+
+# Tests
+tests/
+coverage/
+*.test.js
+
+# Development files
+.env.local
+.env.development
+nodemon.json
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Client directory (separate container)
+client/

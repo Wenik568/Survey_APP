@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система Опитувань - Головна панель</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            padding: 1rem;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .welcome-section h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0.5rem 0;
+        }
+
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .action-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #007bff;
+        }
+
+        .action-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .action-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #007bff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0056b3;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80% { content: '....'; }
+            100% { content: '.....'; }
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>Система Опитувань</h1>
+            <div class="user-info">
+                <span id="username"></span>
+                <button class="logout-btn" onclick="logout()">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h2>Вітаємо, <span id="welcomeUsername"></span>!</h2>
+            <p>Це ваша особиста панель керування опитуваннями</p>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-card">
+                <h3>Активні опитування</h3>
+                <div class="stat-number" id="activeSurveys">-</div>
+                <p>Опитування, які проводяться зараз</p>
+            </div>
+            <div class="stat-card">
+                <h3>Всього відповідей</h3>
+                <div class="stat-number" id="totalResponses">-</div>
+                <p>Загальна кількість отриманих відповідей</p>
+            </div>
+            <div class="stat-card">
+                <h3>Завершені опитування</h3>
+                <div class="stat-number" id="completedSurveys">-</div>
+                <p>Опитування, які вже завершено</p>
+            </div>
+        </div>
+
+        <div class="action-cards">
+            <div class="action-card" onclick="location.href='/create-survey.html'">
+                <div class="action-icon">📝</div>
+                <h3>Створити нове опитування</h3>
+                <p>Створіть нове опитування з різними типами питань</p>
+                <button class="btn" style="background-color: #007bff;">Створити опитування</button>
+            </div>
+            <div class="action-card" onclick="location.href='/surveys.html'">
+                <div class="action-icon">📊</div>
+                <h3>Мої опитування</h3>
+                <p>Переглянути та керувати вашими опитуваннями</p>
+                <button class="btn" style="background-color: #007bff;">Переглянути опитування</button>
+            </div>
+            <div class="action-card">
+                <div class="action-icon">📈</div>
+                <h3>Результати та аналітика</h3>
+                <p>Перегляд результатів та статистики відповідей</p>
+                <a href="/results.html" class="btn" style="background-color: #007bff;">Переглянути результати</a>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">Завантаження даних</div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Функція для отримання токена
+        function getAccessToken() {
+            return localStorage.getItem('accessToken');
+        }
+
+        // Перевірка авторизації при завантаженні сторінки
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = getAccessToken();
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.data.user;
+                    displayUserInfo();
+                    loadDashboardStats();
+                } else {
+                    window.location.href = '/index.html';
+                }
+            } catch (error) {
+                console.error('Помилка перевірки авторизації:', error);
+                window.location.href = '/index.html';
+            }
+        });
+
+        // Відображення інформації про користувача
+        function displayUserInfo() {
+            document.getElementById('username').textContent = currentUser.username;
+            document.getElementById('welcomeUsername').textContent = currentUser.username;
+        }
+
+        // Завантаження статистики для дашборду
+        async function loadDashboardStats() {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/surveys/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${getAccessToken()}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('activeSurveys').textContent = result.data.activeSurveys || 0;
+                    document.getElementById('totalResponses').textContent = result.data.totalResponses || 0;
+                    document.getElementById('completedSurveys').textContent = result.data.completedSurveys || 0;
+                }
+            } catch (error) {
+                console.error('Помилка завантаження статистики:', error);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Вихід з системи
+        function logout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            }).then(() => {
+                localStorage.removeItem('accessToken');
+                window.location.href = '/index.html';
+            });
+        }
+    </script>
+</body>
+</html>

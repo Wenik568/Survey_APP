@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опитування</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .survey-description {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 25px;
+        }
+        .question {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .question-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .question-required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        label:hover {
+            background-color: rgba(0,123,255,0.1);
+        }
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        input[type="radio"], input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .survey-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question-counter {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Завантаження -->
+    <div id="loadingContainer">
+        <div class="container loading">
+            <div class="spinner"></div>
+            <h2>Завантаження опитування...</h2>
+            <p>Будь ласка, зачекайте</p>
+        </div>
+    </div>
+
+    <!-- Основний контент -->
+    <div id="surveyContainer" style="display: none;">
+        <!-- Заголовок -->
+        <div class="header">
+            <h1 id="surveyTitle">Завантаження...</h1>
+        </div>
+
+        <!-- Опис опитування -->
+        <div id="surveyDescriptionContainer"></div>
+
+        <!-- Інформація про опитування -->
+        <div class="survey-info">
+            <p><strong>ℹ️ Інформація:</strong></p>
+            <ul>
+                <li>Заповніть всі обов'язкові поля (позначені червоною зірочкою *)</li>
+                <li>Ваші відповіді будуть збережені анонімно</li>
+                <li>Після відправки ви не зможете змінити відповіді</li>
+            </ul>
+        </div>
+
+        <!-- Прогрес бар -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div class="question-counter">
+            <span id="questionCounter">Питання 0 з 0</span>
+        </div>
+
+        <!-- Форма опитування -->
+        <div id="surveyForm"></div>
+
+        <!-- Кнопка відправки -->
+        <div class="container">
+            <button id="submitButton" type="button">📝 Відправити відповіді</button>
+        </div>
+
+        <!-- Результат -->
+        <div id="resultContainer"></div>
+    </div>
+
+    <!-- Помилка -->
+    <div id="errorContainer" style="display: none;">
+        <div class="container">
+            <div class="error">
+                <h2>❌ Помилка</h2>
+                <p id="errorMessage">Щось пішло не так</p>
+                <button onclick="location.reload()">🔄 Оновити сторінку</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/survey-public.js"></script>
+</body>
+</html>

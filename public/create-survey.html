@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Створення нового опитування</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анімований фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 206, 84, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Навігаційна панель */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.5) inset;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .navbar a {
+            color: #4a5568;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.3s;
+            transform: translateX(-50%);
+        }
+
+        .navbar a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .navbar a:hover::after {
+            width: 80%;
+        }
+
+        /* Контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Форма створення */
+        .creation-form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .creation-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        h1, h2, h3 {
+            color: #2d3748;
+        }
+
+        .creation-form h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .creation-form h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: #4a5568;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .creation-form h3::before {
+            content: '📋';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Форма */
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            color: #2d3748;
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 6px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* Контейнер питань */
+        .questions-container {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 2px dashed #e2e8f0;
+        }
+
+        #questionsContainer {
+            margin-top: 1rem;
+        }
+
+        /* Картка питання */
+        .question-card {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            border-color: #cbd5e0;
+        }
+
+        .question-card .remove-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(245, 101, 101, 0.3);
+            font-size: 1.2rem;
+        }
+
+        .question-card .remove-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 15px rgba(245, 101, 101, 0.4);
+        }
+
+        /* Контейнер опцій */
+        .options-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            gap: 0.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .option-item input {
+            flex-grow: 1;
+        }
+
+        .option-input {
+            padding: 10px 15px !important;
+        }
+
+        /* Кнопки */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #718096, #4a5568);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+        }
+
+        .buttons-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        /* Повідомлення */
+        .error-message, .success-message {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            animation: slideInMessage 0.3s ease-out;
+            position: relative;
+            padding-left: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            border-left: 4px solid #c53030;
+        }
+
+        .error-message::before {
+            content: '✕';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border-left: 4px solid #2f855a;
+        }
+
+        .success-message::before {
+            content: '✓';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+
+        /* Завантаження */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        .loading::before {
+            content: '⌛';
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80% { content: '....'; }
+            100% { content: '.....'; }
+        }
+
+        /* Плаваючі елементи */
+        .floating-shape {
+            position: fixed;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape1 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #fbd38d, transparent);
+            border-radius: 50%;
+            top: 10%;
+            right: 10%;
+            animation: float-shape 15s infinite ease-in-out;
+        }
+
+        .shape2 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #fc8181, transparent);
+            border-radius: 50%;
+            bottom: 20%;
+            left: 5%;
+            animation: float-shape 20s infinite ease-in-out reverse;
+        }
+
+        @keyframes float-shape {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Стилі для модального вікна AI */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px 20px 0 0;
+            color: white;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .close-modal:hover {
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .radio-label, .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-label:hover, .checkbox-label:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .radio-label input, .checkbox-label input {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            text-align: center;
+            color: #667eea;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .btn-ai-generate {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            padding: 16px 32px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-ai-generate:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            transform: translateY(-3px);
+        }
+
+        /* Адаптивність */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .creation-form {
+                padding: 2rem 1.5rem;
+            }
+            
+            .buttons-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .navbar a {
+                margin: 0 5px;
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Плаваючі фігури на фоні -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+
+    <!-- Навігаційна панель -->
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>🗳️ Система Опитувань</h1>
+            <div>
+                <a href="/dashboard.html">Головна</a>
+                <a href="/surveys.html">Мої опитування</a>
+                <button class="btn btn-danger" onclick="logout()" style="margin-left: 10px;">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основний контент -->
+    <div class="container">
+        <div class="creation-form">
+            <h2>📝 Створення нового опитування</h2>
+            
+            <div id="messages"></div>
+            
+            <div class="form-group">
+                <label for="surveyTitle">Назва опитування *</label>
+                <input type="text" id="surveyTitle" placeholder="Введіть назву опитування" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="surveyDescription">Опис опитування</label>
+                <textarea id="surveyDescription" placeholder="Введіть опис опитування (необов'язково)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="surveyClosingDate">Дата закриття опитування (опціонально)</label>
+                <input type="datetime-local" id="surveyClosingDate">
+            </div>
+
+            <div class="questions-container">
+                <h3>Питання</h3>
+                <div id="questionsContainer"></div>
+
+                <!-- Кнопка AI генерації -->
+                <div style="text-align: center; margin: 2rem 0;">
+                    <button class="btn btn-ai-generate" onclick="openAIGenerator()">
+                        🤖 Згенерувати опитування з AI
+                    </button>
+                    <p style="color: #718096; margin-top: 0.5rem; font-size: 0.9rem;">
+                        Швидко створіть опитування на основі теми за допомогою штучного інтелекту
+                    </p>
+                </div>
+            </div>
+
+            <div class="buttons-group">
+                <button class="btn btn-secondary" onclick="addQuestion('text')">
+                    ✏️ Додати текстове питання
+                </button>
+                <button class="btn btn-secondary" onclick="addQuestion('radio')">
+                    ⭕ Додати питання з одним варіантом
+                </button>
+                <button class="btn btn-secondary" onclick="addQuestion('checkbox')">
+                    ☑️ Додати питання з декількома варіантами
+                </button>
+            </div>
+
+            <div class="buttons-group" style="margin-top: 2rem;">
+                <button class="btn btn-success" onclick="createSurvey()">
+                    💾 Зберегти опитування
+                </button>
+                <button class="btn btn-danger" onclick="resetForm()">
+                    🔄 Очистити форму
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Підключаємо AI генератор -->
+    <script src="/js/ai-generator.js"></script>
+
+    <script>
+        let questionsData = [];
+        let questionCounter = 0;
+
+        // Функція відкриття AI генератора
+        function openAIGenerator() {
+            aiGenerator.showGeneratorModal((surveyData) => {
+                // Заповнюємо форму згенерованими даними
+                document.getElementById('surveyTitle').value = surveyData.title || '';
+                document.getElementById('surveyDescription').value = surveyData.description || '';
+
+                // Очищаємо поточні питання
+                questionsData = [];
+                questionCounter = 0;
+                document.getElementById('questionsContainer').innerHTML = '';
+
+                // Додаємо згенеровані питання
+                surveyData.questions.forEach((question, index) => {
+                    addGeneratedQuestion(question);
+                });
+
+                showMessage('success', '🎉 Опитування успішно згенеровано! Ви можете відредагувати питання або зберегти.');
+            });
+        }
+
+        // Додавання згенерованого питання
+        function addGeneratedQuestion(questionData) {
+            questionCounter++;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-card';
+            questionDiv.dataset.id = questionCounter;
+
+            let optionsHtml = '';
+            if (questionData.type === 'radio' || questionData.type === 'checkbox') {
+                const optionsListHtml = (questionData.options || []).map((opt, idx) => `
+                    <div class="option-item">
+                        <input type="text" placeholder="Варіант відповіді" class="option-input" value="${opt.text || opt.value || opt}">
+                        <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+                    </div>
+                `).join('');
+
+                optionsHtml = `
+                    <div class="options-container" id="options-${questionCounter}">
+                        ${optionsListHtml || `
+                            <div class="option-item">
+                                <input type="text" placeholder="Варіант відповіді 1" class="option-input">
+                                <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+                            </div>
+                        `}
+                    </div>
+                    <button class="btn btn-secondary" onclick="addOption(${questionCounter})">
+                        ➕ Додати варіант
+                    </button>
+                `;
+            }
+
+            questionDiv.innerHTML = `
+                <button class="remove-btn" onclick="removeQuestion(this)">❌</button>
+                <div class="form-group">
+                    <label>Текст питання *</label>
+                    <input type="text" class="question-text" placeholder="Введіть текст питання" value="${questionData.text}" required>
+                </div>
+                <div class="form-group">
+                    <label>Тип питання</label>
+                    <select class="question-type" onchange="handleTypeChange(this)">
+                        <option value="text" ${questionData.type === 'text' ? 'selected' : ''}>Текстова відповідь</option>
+                        <option value="textarea" ${questionData.type === 'textarea' ? 'selected' : ''}>Довга текстова відповідь</option>
+                        <option value="radio" ${questionData.type === 'radio' ? 'selected' : ''}>Один варіант</option>
+                        <option value="checkbox" ${questionData.type === 'checkbox' ? 'selected' : ''}>Декілька варіантів</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="question-required" ${questionData.required !== false ? 'checked' : ''}>
+                        <span>⭐ Обов'язкове питання</span>
+                    </label>
+                </div>
+                ${optionsHtml}
+            `;
+
+            const container = document.getElementById('questionsContainer');
+            container.appendChild(questionDiv);
+
+            // Додаємо кнопку вставки після питання
+            const insertBtn = createInsertButton();
+            container.appendChild(insertBtn);
+
+            updateQuestionsData();
+        }
+
+        // Перевірка авторизації
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        });
+
+        function addQuestion(type, insertAfterElement = null) {
+            questionCounter++;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-card';
+            questionDiv.dataset.id = questionCounter;
+
+            let optionsHtml = '';
+            if (type === 'radio' || type === 'checkbox') {
+                optionsHtml = `
+                    <div class="options-container" id="options-${questionCounter}">
+                        <div class="option-item">
+                            <input type="text" placeholder="Варіант відповіді 1" class="option-input">
+                            <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="addOption(${questionCounter})">
+                        ➕ Додати варіант
+                    </button>
+                `;
+            }
+
+            questionDiv.innerHTML = `
+                <button class="remove-btn" onclick="removeQuestion(this)">❌</button>
+                <div class="form-group">
+                    <label>Текст питання *</label>
+                    <input type="text" class="question-text" placeholder="Введіть текст питання" required>
+                </div>
+                <div class="form-group">
+                    <label>Тип питання</label>
+                    <select class="question-type" onchange="handleTypeChange(this)">
+                        <option value="text" ${type === 'text' ? 'selected' : ''}>Текстова відповідь</option>
+                        <option value="radio" ${type === 'radio' ? 'selected' : ''}>Один варіант</option>
+                        <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Декілька варіантів</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" class="question-required" checked>
+                        <span>⭐ Обов'язкове питання</span>
+                    </label>
+                </div>
+                ${optionsHtml}
+            `;
+
+            const container = document.getElementById('questionsContainer');
+
+            if (insertAfterElement) {
+                // Знаходимо батьківську кнопку вставки
+                const insertButtonDiv = insertAfterElement.closest('.insert-question-btn');
+
+                if (insertButtonDiv) {
+                    // Видаляємо стару кнопку вставки
+                    const oldInsertBtn = insertButtonDiv;
+
+                    // Вставляємо питання на місце старої кнопки
+                    container.insertBefore(questionDiv, oldInsertBtn);
+
+                    // Створюємо нову кнопку вставки після питання
+                    const newInsertBtn = createInsertButton();
+                    container.insertBefore(newInsertBtn, oldInsertBtn);
+
+                    // Видаляємо стару кнопку
+                    oldInsertBtn.remove();
+                } else {
+                    container.appendChild(questionDiv);
+                    const insertBtn = createInsertButton();
+                    container.appendChild(insertBtn);
+                }
+            } else {
+                container.appendChild(questionDiv);
+                const insertBtn = createInsertButton();
+                container.appendChild(insertBtn);
+            }
+
+            updateQuestionsData();
+        }
+
+        function createInsertButton() {
+            const insertDiv = document.createElement('div');
+            insertDiv.className = 'insert-question-btn';
+            insertDiv.innerHTML = `
+                <div style="text-align: center; margin: 1rem 0; padding: 0.5rem; border-top: 2px dashed #cbd5e0;">
+                    <button class="btn btn-sm" onclick="showInsertMenu(this)" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 0.85rem; padding: 0.5rem 1rem;">
+                        ➕ Вставити питання тут
+                    </button>
+                </div>
+            `;
+            return insertDiv;
+        }
+
+        function showInsertMenu(button) {
+            const existingMenu = document.querySelector('.insert-menu');
+            if (existingMenu) existingMenu.remove();
+
+            // Зберігаємо посилання на батьківський елемент кнопки
+            const insertBtnDiv = button.closest('.insert-question-btn');
+
+            const menu = document.createElement('div');
+            menu.className = 'insert-menu';
+            menu.style.cssText = `
+                position: absolute;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                padding: 1rem;
+                z-index: 1000;
+                min-width: 250px;
+            `;
+
+            // Створюємо кнопки з правильною передачею параметрів
+            const textBtn = document.createElement('button');
+            textBtn.className = 'btn btn-secondary';
+            textBtn.style.cssText = 'width: 100%; margin-bottom: 0.5rem;';
+            textBtn.innerHTML = '✏️ Текстове питання';
+            textBtn.onclick = () => { addQuestion('text', insertBtnDiv); menu.remove(); };
+
+            const radioBtn = document.createElement('button');
+            radioBtn.className = 'btn btn-secondary';
+            radioBtn.style.cssText = 'width: 100%; margin-bottom: 0.5rem;';
+            radioBtn.innerHTML = '⭕ Один варіант';
+            radioBtn.onclick = () => { addQuestion('radio', insertBtnDiv); menu.remove(); };
+
+            const checkboxBtn = document.createElement('button');
+            checkboxBtn.className = 'btn btn-secondary';
+            checkboxBtn.style.cssText = 'width: 100%;';
+            checkboxBtn.innerHTML = '☑️ Декілька варіантів';
+            checkboxBtn.onclick = () => { addQuestion('checkbox', insertBtnDiv); menu.remove(); };
+
+            menu.appendChild(textBtn);
+            menu.appendChild(radioBtn);
+            menu.appendChild(checkboxBtn);
+
+            const rect = button.getBoundingClientRect();
+            menu.style.top = (rect.bottom + window.scrollY) + 'px';
+            menu.style.left = (rect.left + window.scrollX - 100) + 'px';
+
+            document.body.appendChild(menu);
+
+            setTimeout(() => {
+                document.addEventListener('click', function closeMenu(e) {
+                    if (!menu.contains(e.target) && e.target !== button) {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                });
+            }, 0);
+        }
+
+        function removeQuestion(button) {
+            const questionCard = button.closest('.question-card');
+
+            // Знаходимо наступний елемент після питання
+            const nextElement = questionCard.nextElementSibling;
+
+            // Видаляємо питання
+            questionCard.remove();
+
+            // Якщо наступний елемент - кнопка вставки, видаляємо її теж
+            if (nextElement && nextElement.classList.contains('insert-question-btn')) {
+                nextElement.remove();
+            }
+
+            updateQuestionsData();
+        }
+
+        function addOption(questionId) {
+            const optionsContainer = document.getElementById(`options-${questionId}`);
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            optionDiv.innerHTML = `
+                <input type="text" placeholder="Варіант відповіді" class="option-input">
+                <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+            `;
+            optionsContainer.appendChild(optionDiv);
+            updateQuestionsData();
+        }
+
+        function removeOption(button) {
+            button.closest('.option-item').remove();
+            updateQuestionsData();
+        }
+
+        function handleTypeChange(select) {
+            const questionCard = select.closest('.question-card');
+            const questionId = questionCard.dataset.id;
+            const optionsContainer = questionCard.querySelector('.options-container');
+            const addOptionBtn = questionCard.querySelector('button:last-child');
+
+            if (select.value === 'text') {
+                if (optionsContainer) {
+                    optionsContainer.remove();
+                    addOptionBtn.remove();
+                }
+            } else if (!optionsContainer) {
+                const newOptionsContainer = document.createElement('div');
+                newOptionsContainer.className = 'options-container';
+                newOptionsContainer.id = `options-${questionId}`;
+                newOptionsContainer.innerHTML = `
+                    <div class="option-item">
+                        <input type="text" placeholder="Варіант відповіді 1" class="option-input">
+                        <button class="btn btn-danger" onclick="removeOption(this)">❌</button>
+                    </div>
+                `;
+
+                const addButton = document.createElement('button');
+                addButton.className = 'btn btn-secondary';
+                addButton.onclick = () => addOption(questionId);
+                addButton.textContent = '➕ Додати варіант';
+
+                questionCard.appendChild(newOptionsContainer);
+                questionCard.appendChild(addButton);
+            }
+            updateQuestionsData();
+        }
+
+        function updateQuestionsData() {
+            questionsData = [];
+            document.querySelectorAll('.question-card').forEach((card, index) => {
+                const requiredCheckbox = card.querySelector('.question-required');
+                const questionData = {
+                    text: card.querySelector('.question-text').value,
+                    type: card.querySelector('.question-type').value,
+                    required: requiredCheckbox ? requiredCheckbox.checked : true,
+                    options: [],
+                    order: index + 1  // Додаємо порядковий номер питання
+                };
+
+                const optionsContainer = card.querySelector('.options-container');
+                if (optionsContainer) {
+                    optionsContainer.querySelectorAll('.option-input').forEach((input, optionIndex) => {
+                        const optionText = input.value.trim();
+                        if (optionText) {
+                            questionData.options.push({
+                                text: optionText,
+                                value: optionText  // Використовуємо текст як значення
+                            });
+                        }
+                    });
+                }
+
+                questionsData.push(questionData);
+            });
+        }
+
+        async function createSurvey() {
+            console.log('🚀 createSurvey викликано');
+            updateQuestionsData();
+            console.log('📊 questionsData:', questionsData);
+
+            const title = document.getElementById('surveyTitle').value.trim();
+            const description = document.getElementById('surveyDescription').value.trim();
+            const closingDate = document.getElementById('surveyClosingDate').value;
+
+            console.log('📝 title:', title);
+            console.log('📝 description:', description);
+            console.log('📅 closingDate:', closingDate);
+
+            if (!title) {
+                console.log('❌ Немає назви опитування');
+                showMessage('Будь ласка, введіть назву опитування', 'error');
+                return;
+            }
+
+            if (questionsData.length === 0) {
+                console.log('❌ Немає питань');
+                showMessage('Додайте хоча б одне питання', 'error');
+                return;
+            }
+
+            const invalidQuestions = questionsData.filter(q => !q.text ||
+                (q.type !== 'text' && q.type !== 'textarea' && (!q.options || q.options.length < 2)));
+
+            console.log('🔍 invalidQuestions:', invalidQuestions);
+
+            if (invalidQuestions.length > 0) {
+                console.log('❌ Є невалідні питання');
+                showMessage('Перевірте, що всі питання мають текст та варіанти відповідей (мінімум 2)', 'error');
+                return;
+            }
+
+            const surveyData = {
+                title,
+                description,
+                questions: questionsData,
+                closingDate: closingDate || null
+            };
+
+            console.log('📤 Відправка даних на сервер:', surveyData);
+
+            try {
+                const response = await fetch('/api/surveys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    },
+                    body: JSON.stringify(surveyData)
+                });
+
+                console.log('📥 Отримано відповідь від сервера:', response.status);
+
+                const result = await response.json();
+                console.log('📋 Результат:', result);
+
+                if (result.success) {
+                    console.log('✅ Опитування створено успішно!');
+                    showMessage('Опитування успішно створено!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/surveys.html';
+                    }, 1500);
+                } else {
+                    console.log('❌ Помилка:', result.message);
+                    showMessage(result.message || 'Помилка створення опитування', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Помилка запиту:', error);
+                showMessage('Помилка з\'єднання з сервером', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => {
+                messagesDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function resetForm() {
+            if (confirm('Ви впевнені, що хочете очистити форму? Всі введені дані будуть втрачені.')) {
+                document.getElementById('surveyTitle').value = '';
+                document.getElementById('surveyDescription').value = '';
+                document.getElementById('surveyClosingDate').value = '';
+                document.getElementById('questionsContainer').innerHTML = '';
+                questionsData = [];
+                questionCounter = 0;
+                showMessage('Форму очищено', 'success');
+            }
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            }).then(() => {
+                localStorage.removeItem('accessToken');
+                window.location.href = '/index.html';
+            });
+        }
+    </script>
+</body>
+</html>

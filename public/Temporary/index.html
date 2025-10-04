@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система Опитувань - Автентифікація</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анімований фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 206, 84, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Головний контейнер */
+        .main-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Заголовок */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Сітка контейнерів */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Картки */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                0 0 0 1px rgba(255,255,255,0.5) inset;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.15),
+                0 0 0 2px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Заголовки карток */
+        .container h2 {
+            color: #2d3748;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            font-weight: 600;
+            position: relative;
+            padding-left: 35px;
+        }
+
+        .container h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Форми */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: color 0.3s;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+            color: #2d3748;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 6px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input:focus + label {
+            color: #667eea;
+        }
+
+        /* Чекбокс */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            position: relative;
+            appearance: none;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        input[type="checkbox"]:checked {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Кнопки */
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Повідомлення */
+        .success, .error, .info {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+            padding-left: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .success::before, .error::before, .info::before {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border-left: 4px solid #2f855a;
+        }
+
+        .success::before {
+            content: '✓';
+        }
+
+        .error {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            border-left: 4px solid #c53030;
+        }
+
+        .error::before {
+            content: '✕';
+        }
+
+        .info {
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            color: white;
+            border-left: 4px solid #2b6cb0;
+        }
+
+        .info::before {
+            content: 'ℹ';
+        }
+
+        /* Відображення токену */
+        .token-display {
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 2px dashed #cbd5e0;
+            color: #4a5568;
+            font-size: 0.9em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .token-display::before {
+            content: '🔐';
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 20px;
+            opacity: 0.5;
+        }
+
+        /* Список */
+        ol {
+            padding-left: 20px;
+            color: white;
+        }
+
+        ol li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Інформаційна картка */
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .info-card strong {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #fbd38d;
+        }
+
+        /* Адаптивність */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 25px;
+            }
+        }
+
+        /* Плаваючі елементи на фоні */
+        .floating-shape {
+            position: fixed;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape1 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #fbd38d, transparent);
+            border-radius: 50%;
+            top: 10%;
+            right: 10%;
+            animation: float-shape 15s infinite ease-in-out;
+        }
+
+        .shape2 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #fc8181, transparent);
+            border-radius: 50%;
+            bottom: 20%;
+            left: 5%;
+            animation: float-shape 20s infinite ease-in-out reverse;
+        }
+
+        @keyframes float-shape {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Плаваючі фігури на фоні -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+
+    <div class="main-wrapper">
+        <!-- Заголовок -->
+        <div class="header">
+            <h1>Система Опитувань</h1>
+            <p>Тестування системи автентифікації</p>
+        </div>
+
+        <!-- Сітка з картками -->
+        <div class="grid-container">
+            <!-- Реєстрація -->
+            <div class="container" id="registerContainer">
+                <h2>Реєстрація</h2>
+                <div>
+                    <div class="form-group">
+                        <label for="regUsername">Ім'я користувача:</label>
+                        <input type="text" id="regUsername" required placeholder="Введіть ваше ім'я">
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email:</label>
+                        <input type="email" id="regEmail" required placeholder="example@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">Пароль:</label>
+                        <input type="password" id="regPassword" required placeholder="Мінімум 6 символів">
+                    </div>
+                    <button type="button" id="registerBtn">Зареєструватися</button>
+                </div>
+                <div id="registerResult"></div>
+            </div>
+
+            <!-- Вхід -->
+            <div class="container" id="loginContainer">
+                <h2>Вхід</h2>
+                <div>
+                    <div class="form-group">
+                        <label for="loginEmail">Email:</label>
+                        <input type="email" id="loginEmail" required placeholder="example@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль:</label>
+                        <input type="password" id="loginPassword" required placeholder="Введіть ваш пароль">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Не виходити із системи</label>
+                    </div>
+                    <button type="button" id="loginBtn">Увійти</button>
+                </div>
+                <div id="loginResult"></div>
+            </div>
+        </div>
+
+        <!-- Профіль -->
+        <div class="container" id="profileContainer">
+            <h2>Профіль</h2>
+            <div class="form-group">
+                <label for="tokenInput">JWT Токен:</label>
+                <input type="text" id="tokenInput" placeholder="Токен з'явиться автоматично після входу">
+            </div>
+            <button type="button" id="profileBtn">Отримати профіль</button>
+            <div id="profileResult"></div>
+        </div>
+
+        <!-- Інформація -->
+        <div class="info-card">
+            <strong>Кроки тестування:</strong>
+            <ol>
+                <li>Зареєструйте нового користувача у формі реєстрації</li>
+                <li>Або увійдіть з існуючими даними через форму входу</li>
+                <li>Система автоматично покаже ваш профіль після успішної автентифікації</li>
+                <li>Можна перейти до управління опитуваннями після входу в систему</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

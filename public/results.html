@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результати опитувань</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анімований фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 206, 84, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Навігаційна панель */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.5) inset;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .navbar a {
+            color: #4a5568;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.3s;
+            transform: translateX(-50%);
+        }
+
+        .navbar a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .navbar a:hover::after {
+            width: 80%;
+        }
+
+        /* Контейнер */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container h2 {
+            color: white;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Картка опитування */
+        .survey-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .survey-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .survey-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.15),
+                0 0 0 2px rgba(102, 126, 234, 0.4);
+        }
+
+        .survey-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px dashed #e2e8f0;
+        }
+
+        .survey-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .survey-info {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            color: #718096;
+        }
+
+        .survey-info p {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .survey-info strong {
+            color: #4a5568;
+        }
+
+        /* Кнопки */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #718096, #4a5568);
+        }
+
+        /* Сітка статистики */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+            justify-items: center;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: #cbd5e0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        /* Контейнер графіків */
+        .chart-container {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(248, 249, 250, 0.9);
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .chart-container:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .chart-container h4 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Список відповідей */
+        .response-list {
+            margin-top: 1rem;
+        }
+
+        .response-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            border-left: 4px solid;
+            border-image: linear-gradient(135deg, #667eea, #764ba2) 1;
+            transition: all 0.3s;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .response-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .answer-text {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        /* Завантаження */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+            font-size: 1.2rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .loading::before {
+            content: '⌛';
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80% { content: '....'; }
+            100% { content: '.....'; }
+        }
+
+        /* Немає опитувань */
+        .no-surveys {
+            text-align: center;
+            padding: 4rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            color: #4a5568;
+        }
+
+        .no-surveys h3 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .no-surveys p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Помилка */
+        .error {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(245, 101, 101, 0.3);
+        }
+
+        /* Плаваючі елементи */
+        .floating-shape {
+            position: fixed;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #fbd38d, transparent);
+            border-radius: 50%;
+            top: 20%;
+            right: 10%;
+            animation: float-shape 15s infinite ease-in-out;
+        }
+
+        .shape2 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #fc8181, transparent);
+            border-radius: 50%;
+            bottom: 20%;
+            left: 5%;
+            animation: float-shape 20s infinite ease-in-out reverse;
+        }
+
+        @keyframes float-shape {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Адаптивність */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .container h2 {
+                font-size: 1.8rem;
+            }
+            
+            .survey-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .survey-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Модальне вікно AI аналізу */
+        .ai-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .ai-modal-content {
+            background: white;
+            padding: 0;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 90%;
+            height: 85vh;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ai-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .ai-modal-header h3 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .ai-modal-close {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #718096;
+            transition: all 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .ai-modal-close:hover {
+            background: #f7fafc;
+            color: #2d3748;
+            transform: rotate(90deg);
+        }
+
+        .ai-chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            background: #f7fafc;
+        }
+
+        .ai-message {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .ai-message.assistant {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .ai-message-content {
+            max-width: 75%;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .ai-message.user .ai-message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message.assistant .ai-message-content {
+            background: white;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 5px;
+        }
+
+        .ai-message-content h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .ai-message-content ul {
+            background: #f7fafc;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 0.8rem 0;
+        }
+
+        .ai-message-content li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .ai-message-content li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .ai-message-content strong {
+            font-weight: 600;
+        }
+
+        .ai-message-label {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .ai-chat-input-container {
+            padding: 1.5rem 2rem;
+            border-top: 2px solid #e2e8f0;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .ai-chat-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .ai-chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: none;
+            font-family: inherit;
+            min-height: 50px;
+            max-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .ai-chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ai-chat-send-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .ai-chat-send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .ai-chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-analysis-content {
+            line-height: 1.8;
+            color: #2d3748;
+            white-space: pre-wrap;
+            font-size: 1rem;
+        }
+
+        .ai-loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .ai-loading::before {
+            content: '🤖';
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Плаваючі фігури на фоні -->
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+
+    <!-- Навігаційна панель -->
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>🗳️ Система Опитувань</h1>
+            <div>
+                <a href="/dashboard.html">Головна</a>
+                <a href="/surveys.html">Мої опитування</a>
+                <button class="btn" onclick="logout()" style="margin-left: 10px;">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основний контент -->
+    <div class="container">
+        <h2>📊 Результати опитувань</h2>
+        <div id="surveyResults"></div>
+        <div id="loading" class="loading">Завантаження результатів</div>
+    </div>
+
+    <!-- Модальне вікно AI аналізу з чатом -->
+    <div id="aiModal" class="ai-modal">
+        <div class="ai-modal-content">
+            <div class="ai-modal-header">
+                <h3>🤖 AI Асистент</h3>
+                <span class="ai-modal-close" onclick="closeAIModal()">&times;</span>
+            </div>
+            <div class="ai-chat-container">
+                <div id="aiChatMessages" class="ai-chat-messages">
+                    <!-- Повідомлення чату будуть тут -->
+                </div>
+                <div class="ai-chat-input-container">
+                    <div class="ai-chat-input-wrapper">
+                        <textarea
+                            id="aiChatInput"
+                            class="ai-chat-input"
+                            placeholder="Поставте питання про результати опитування..."
+                            rows="1"
+                        ></textarea>
+                        <button id="aiChatSend" class="ai-chat-send-btn" onclick="sendChatMessage()">
+                            Надіслати
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Перевірка авторизації при завантаженні
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                window.location.href = '/index.html';
+                return;
+            }
+            loadSurveyResults();
+        });
+
+        // Завантаження результатів опитувань
+        async function loadSurveyResults() {
+            const loading = document.getElementById('loading');
+            const resultsContainer = document.getElementById('surveyResults');
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/surveys', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.data.surveys.length === 0) {
+                        resultsContainer.innerHTML = `
+                            <div class="no-surveys">
+                                <h3>У вас поки немає опитувань</h3>
+                                <p>Створіть нове опитування, щоб побачити результати</p>
+                                <a href="/create-survey.html" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">Створити опитування</a>
+                            </div>
+                        `;
+                    } else {
+                        const surveysHtml = await Promise.all(result.data.surveys.map(async survey => {
+                            const stats = await loadSurveyStats(survey._id);
+                            return generateSurveyCard(survey, stats);
+                        }));
+                        
+                        resultsContainer.innerHTML = surveysHtml.join('');
+                    }
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="error">
+                            Помилка завантаження результатів: ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Помилка:', error);
+                resultsContainer.innerHTML = `
+                    <div class="error">
+                        Помилка з'єднання з сервером
+                    </div>
+                `;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Завантаження статистики конкретного опитування
+        async function loadSurveyStats(surveyId) {
+            try {
+                const response = await fetch(`/api/surveys/${surveyId}/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                });
+                
+                const result = await response.json();
+                return result.success ? result.data : null;
+            } catch (error) {
+                console.error('Помилка завантаження статистики:', error);
+                return null;
+            }
+        }
+
+        // Генерація HTML картки опитування
+        function generateSurveyCard(survey, stats) {
+            const createdDate = new Date(survey.createdAt).toLocaleDateString('uk-UA');
+            const isActive = survey.isActive ? 'Активне' : 'Неактивне';
+            const responsesCount = stats?.totalResponses || 0;
+
+            return `
+                <div class="survey-card">
+                    <div class="survey-header">
+                        <h3 class="survey-title">${survey.title}</h3>
+                        <div style="display: flex; gap: 10px;">
+                            ${responsesCount > 0 ? `
+                                <button onclick="showAIAnalysis('${survey._id}')" class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    🤖 AI Аналіз
+                                </button>
+                            ` : ''}
+                            <a href="/export.html?id=${survey._id}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                📊 Експорт CSV
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="survey-info">
+                        <p><strong>Статус:</strong> ${isActive}</p>
+                        <p><strong>Створено:</strong> ${createdDate}</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        ${stats ? generateStatsHTML(stats) : 'Статистика поки недоступна'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Генерація HTML для статистики
+        function generateStatsHTML(stats) {
+            let statsHtml = '';
+            
+            if (stats.questionStats) {
+                stats.questionStats.forEach((question, index) => {
+                    statsHtml += `
+                        <div class="chart-container">
+                            <h4>Питання ${index + 1}: ${question.text}</h4>
+                            ${generateAnswersHTML(question)}
+                        </div>
+                    `;
+                });
+            }
+            
+            return statsHtml;
+        }
+
+        // Генерація HTML для відповідей
+        function generateAnswersHTML(question) {
+            if (question.type === 'text') {
+                return `
+                    <div class="response-list">
+                        ${Object.entries(question.answers)
+                            .map(([answer, count]) => `
+                                <div class="response-item">
+                                    <div class="answer-text">${answer}</div>
+                                </div>
+                            `).join('')}
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="stats-grid">
+                        ${Object.entries(question.answers)
+                            .map(([answer, count]) => `
+                                <div class="stat-card">
+                                    <div class="stat-label">${answer}</div>
+                                    <div class="stat-number">${count}</div>
+                                    <div class="stat-label">відповідей</div>
+                                </div>
+                            `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Експорт результатів у CSV
+        async function exportResponses(surveyId) {
+            window.location.href = `/export.html?id=${surveyId}`;
+        }
+
+        // Вихід з системи
+        function logout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            }).then(() => {
+                localStorage.removeItem('accessToken');
+                window.location.href = '/index.html';
+            });
+        }
+
+        // Глобальні змінні для чату
+        let currentSurveyId = null;
+        let chatHistory = [];
+
+        // Показати AI чат
+        async function showAIAnalysis(surveyId) {
+            currentSurveyId = surveyId;
+            chatHistory = [];
+
+            const modal = document.getElementById('aiModal');
+            const messagesContainer = document.getElementById('aiChatMessages');
+
+            // Показати модальне вікно
+            modal.style.display = 'flex';
+
+            // Очистити попередні повідомлення та показати завантаження
+            messagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #718096;">
+                    <p>⏳ Завантажую початковий аналіз...</p>
+                </div>
+            `;
+
+            try {
+                // Отримати початковий аналіз
+                const response = await fetch(`/api/surveys/${surveyId}/ai-analysis`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Показати початковий аналіз як повідомлення від AI
+                    messagesContainer.innerHTML = '';
+
+                    const initialMessage = `📊 **Аналіз опитування "${result.data.metadata.surveyTitle}"**\n\n${result.data.analysis}\n\n💬 Можете поставити додаткові питання про результати!`;
+
+                    addMessageToChat('assistant', initialMessage);
+
+                    // Зберегти в історію
+                    chatHistory.push({
+                        role: 'assistant',
+                        content: initialMessage
+                    });
+                } else {
+                    messagesContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #e53e3e;">
+                            <p>❌ Помилка: ${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Помилка AI аналізу:', error);
+                messagesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #e53e3e;">
+                        <p>❌ Помилка з'єднання з сервером</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Форматування тексту з markdown у HTML
+        function formatMessage(text) {
+            // Конвертуємо markdown у HTML
+            let formatted = text
+                // Заголовки з емодзі
+                .replace(/^(🎯|📊|💭|😊|💡|⚠️)\s*([^\n]+)/gm, '<h3 style="margin: 1.5rem 0 0.8rem 0; color: #2d3748; font-size: 1.2rem; font-weight: 600;">$1 $2</h3>')
+                // Жирний текст
+                .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>')
+                // Списки з "-"
+                .replace(/^- (.+)$/gm, '<li style="margin-left: 1.5rem; margin-bottom: 0.5rem;">$1</li>')
+                // Нумеровані списки
+                .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left: 1.5rem; margin-bottom: 0.5rem;"><strong>$1.</strong> $2</li>')
+                // Розриви рядків
+                .replace(/\n\n/g, '</p><p style="margin: 0.8rem 0;">')
+                .replace(/\n/g, '<br>');
+
+            // Обгортаємо в параграфи
+            formatted = '<p style="margin: 0.8rem 0;">' + formatted + '</p>';
+
+            // Обгортаємо списки в ul
+            formatted = formatted.replace(/(<li[^>]*>.*?<\/li>)+/gs, match => {
+                return '<ul style="margin: 0.5rem 0; padding-left: 0; list-style: none;">' + match + '</ul>';
+            });
+
+            return formatted;
+        }
+
+        // Додати повідомлення до чату
+        function addMessageToChat(role, content) {
+            const messagesContainer = document.getElementById('aiChatMessages');
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${role}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'ai-message-content';
+
+            // Для AI відповідей - форматувати markdown
+            if (role === 'assistant') {
+                contentDiv.innerHTML = formatMessage(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+
+            // Прокрутити вниз
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Надіслати повідомлення в чаті
+        async function sendChatMessage() {
+            const input = document.getElementById('aiChatInput');
+            const sendBtn = document.getElementById('aiChatSend');
+            const message = input.value.trim();
+
+            if (!message || !currentSurveyId) return;
+
+            // Додати повідомлення користувача
+            addMessageToChat('user', message);
+            chatHistory.push({ role: 'user', content: message });
+
+            // Очистити input та вимкнути кнопку
+            input.value = '';
+            sendBtn.disabled = true;
+
+            // Показати індикатор набору
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'ai-message assistant';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '<div class="ai-message-content">⏳ Думаю...</div>';
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch(`/api/surveys/${currentSurveyId}/ai-chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        history: chatHistory
+                    })
+                });
+
+                const result = await response.json();
+
+                // Видалити індикатор набору
+                typingDiv.remove();
+
+                if (result.success) {
+                    addMessageToChat('assistant', result.data.response);
+                    chatHistory.push({
+                        role: 'assistant',
+                        content: result.data.response
+                    });
+                } else {
+                    addMessageToChat('assistant', `❌ Помилка: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Помилка відправки повідомлення:', error);
+                typingDiv.remove();
+                addMessageToChat('assistant', '❌ Помилка з\'єднання з сервером');
+            } finally {
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
+
+        // Enter для відправки (Shift+Enter для нового рядка)
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('aiChatInput');
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChatMessage();
+                    }
+                });
+
+                // Auto-resize textarea
+                input.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+            }
+        });
+
+        // Закрити модальне вікно AI аналізу
+        function closeAIModal() {
+            document.getElementById('aiModal').style.display = 'none';
+        }
+
+        // Закрити при кліку поза модальним вікном
+        document.getElementById('aiModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'aiModal') {
+                closeAIModal();
+            }
+        });
+    </script>
+</body>
+</html>
