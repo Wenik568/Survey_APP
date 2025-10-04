@@ -46,7 +46,7 @@ app.use(helmet({
 // CORS налаштування для підтримки credentials (cookies)
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? [process.env.FRONTEND_URL || 'https://responsible-encouragement-production.up.railway.app']
+    ? ['https://survey-app-coral-omega.vercel.app', process.env.FRONTEND_URL].filter(Boolean)
     : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5176', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   credentials: true,
   optionsSuccessStatus: 200
