@@ -50,7 +50,6 @@ app.use(cors({
     // Список дозволених доменів
     const allowedOrigins = [
       'https://survey-app-coral-omega.vercel.app',
-      'https://responsible-encouragement-production.up.railway.app',
       /^http:\/\/localhost:\d+$/  // localhost для розробки
     ];
 
